@@ -61,7 +61,7 @@ class PostsViewsTests(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(PostsViewsTests.user)
 
-    def test_pages_uses_correct_template(self):
+    def test_posts_pages_uses_correct_template(self):
         slug = PostsViewsTests.group.slug
         username = PostsViewsTests.user.username
         post_id = PostsViewsTests.post.id
@@ -77,6 +77,7 @@ class PostsViewsTests(TestCase):
                 'posts:post',
                 kwargs={'username': username, 'post_id': post_id}
             ),
+            'follow.html': reverse('posts:follow_index'),
         }
         for template, reverse_name in templates_pages_names.items():
             with self.subTest(reverse_name=reverse_name):
@@ -87,7 +88,7 @@ class PostsViewsTests(TestCase):
                     f'Неверный шаблон страницы {reverse_name}'
                 )
 
-    def test_index_page_show_correct_context(self):
+    def test_posts_index_page_show_correct_context(self):
         response = self.authorized_client.get(reverse('posts:index'))
         post_context_0 = response.context.get('page')[0]
         self.assertEqual(
@@ -96,7 +97,7 @@ class PostsViewsTests(TestCase):
             'Неверный контекст на главной странице'
         )
 
-    def test_profile_page_show_correct_context(self):
+    def test_posts_profile_page_show_correct_context(self):
         username = PostsViewsTests.user.username
         response = self.authorized_client.get(
             reverse('posts:profile', kwargs={'username': username})
@@ -104,6 +105,7 @@ class PostsViewsTests(TestCase):
         post_context_0 = response.context.get('page')[0]
         post_count = response.context.get('post_count')
         post_author = response.context.get('author')
+        post_following = response.context.get('following')
         self.assertEqual(
             post_context_0,
             PostsViewsTests.post,
@@ -120,8 +122,13 @@ class PostsViewsTests(TestCase):
             PostsViewsTests.user,
             'Неверный контекст автор на странице профиля пользователя'
         )
+        self.assertEqual(
+            post_following,
+            False,
+            'Неверный контекст Подписки на странице профиля пользователя'
+        )
 
-    def test_post_page_show_correct_context(self):
+    def test_posts_post_page_show_correct_context(self):
         username = PostsViewsTests.user.username
         post_id = PostsViewsTests.post.id
         response = self.authorized_client.get(
@@ -148,7 +155,7 @@ class PostsViewsTests(TestCase):
             'Неверный контекст автор на странице просмотра отдельного поста'
         )
 
-    def test_post_edit_page_show_correct_context(self):
+    def test_posts_edit_page_show_correct_context(self):
         username = PostsViewsTests.user.username
         post_id = PostsViewsTests.post.id
         response = self.authorized_client.get(
@@ -175,7 +182,7 @@ class PostsViewsTests(TestCase):
             'Неверный контекст поста на странице редактирования поста'
         )
 
-    def test_group_page_show_correct_context(self):
+    def test_posts_group_page_show_correct_context(self):
         slug = PostsViewsTests.group.slug
         response = self.authorized_client.get(
                 reverse('posts:group', kwargs={'slug': slug})
@@ -187,7 +194,7 @@ class PostsViewsTests(TestCase):
             'Неверный контекст группы на странице группы'
         )
 
-    def test_new_post_page_show_correct_context(self):
+    def test_posts_new_post_page_show_correct_context(self):
         response = self.authorized_client.get(reverse('posts:new_post'))
         form_fields = {
             'text': fields.CharField,
@@ -202,7 +209,7 @@ class PostsViewsTests(TestCase):
                     f'Неверный контекст формы для поля {field}'
                 )
 
-    def test_index_page_posts_count_is_9(self):
+    def test_posts_index_page_posts_count_is_9(self):
         response = self.authorized_client.get(reverse('posts:index'))
         self.assertEqual(
             len(response.context['page']),
@@ -210,7 +217,7 @@ class PostsViewsTests(TestCase):
             'Неверное количество постов на главной странице'
         )
 
-    def test_group_page_post_is_in_right_group(self):
+    def test_posts_group_page_post_is_in_right_group(self):
         slug = PostsViewsTests.group.slug
         response = self.authorized_client.get(
             reverse('posts:group', kwargs={'slug': slug})
@@ -221,7 +228,7 @@ class PostsViewsTests(TestCase):
             f'Пост отсутствует в группе {slug}'
         )
 
-    def test_group_page_post_not_in_another_group(self):
+    def test_posts_group_page_post_not_in_another_group(self):
         group = Group.objects.create(
             title='Худшие',
             slug='worst',
@@ -236,7 +243,7 @@ class PostsViewsTests(TestCase):
             'Пост попал не в ту группу'
         )
 
-    def test_idex_page_cache(self):
+    def test_posts_idex_page_cache(self):
         response_1 = self.guest_client.get(reverse('posts:index'))
         Post.objects.create(
             text='Тестовая страница ',
@@ -247,6 +254,68 @@ class PostsViewsTests(TestCase):
         self.assertEqual(response_1.content,
                          response_2.content,
                          'Cache не работает')
+
+    def test_posts_subscription_unsubscription_for_auth_user(self):
+        user1 = User.objects.create(username='user1')
+        Post.objects.create(
+            text='Пост юзера 1',
+            pub_date=dt.today,
+            author=user1,
+        )
+        subscription_count = PostsViewsTests.user.follower.count()
+        self.authorized_client.get(reverse('posts:profile_follow',
+                                   kwargs={'username': user1}))
+
+        self.assertEqual(
+            PostsViewsTests.user.follower.count(),
+            subscription_count + 1,
+            'Неверная работа функции добавления подписки'
+        )
+        self.authorized_client.get(reverse('posts:profile_unfollow',
+                                   kwargs={'username': user1}))
+        self.assertEqual(
+            PostsViewsTests.user.follower.count(),
+            subscription_count,
+            'Неверная работа функции удаления подписки'
+        )
+
+    def test_posts_subscription_page_content(self):
+        user2 = User.objects.create(username='user2')
+        user2_auth = Client()
+        user2_auth.force_login(user2)
+        user3 = User.objects.create(username='user3')
+        user3_auth = Client()
+        user3_auth.force_login(user3)
+        user4 = User.objects.create(username='user4')
+        user4_auth = Client()
+        user4_auth.force_login(user4)
+
+        user2_response = user2_auth.get(reverse('posts:follow_index'))
+        user2_post_count = len(user2_response.context.get('page').object_list)
+        user3_response = user3_auth.get(reverse('posts:follow_index'))
+        user3_post_count = len(user3_response.context.get('page').object_list)
+
+        user2_auth.get(reverse('posts:profile_follow',
+                               kwargs={'username': user4}))
+
+        Post.objects.create(
+            text='Пост юзера 4',
+            pub_date=dt.today,
+            author=user4,
+        )
+        response = user2_auth.get(reverse('posts:follow_index'))
+        self.assertEqual(
+            len(response.context.get('page').object_list),
+            user2_post_count + 1,
+            'Неверная работа ленты подписок (отсутствует новый пост)'
+        )
+
+        response = user3_auth.get(reverse('posts:follow_index'))
+        self.assertEqual(
+            len(response.context.get('page').object_list),
+            user3_post_count,
+            'Неверная работа ленты подписок (лишний новый пост)'
+        )
 
 
 class PaginatorViewsTest(TestCase):
@@ -265,7 +334,7 @@ class PaginatorViewsTest(TestCase):
     def setUp(self):
         self.guest_client = Client()
 
-    def test_first_page_containse_ten_records(self):
+    def test_posts_first_page_containse_ten_records(self):
         response = self.client.get(reverse('posts:index'))
         self.assertEqual(
             len(response.context.get('page').object_list),
@@ -273,7 +342,7 @@ class PaginatorViewsTest(TestCase):
             'Неверное количество постов на первой странице, корректное - 10'
         )
 
-    def test_second_page_containse_three_records(self):
+    def test_posts_second_page_containse_three_records(self):
         response = self.client.get(reverse('posts:index') + '?page=2')
         self.assertEqual(
             len(response.context.get('page').object_list),
@@ -281,7 +350,7 @@ class PaginatorViewsTest(TestCase):
             'Неверное количество постов на второй странице, корректное - 3'
         )
 
-    def test_second_page_show_correct_context(self):
+    def test_posts_second_page_show_correct_context(self):
         response = self.guest_client.get(reverse('posts:index'))
         post_text_2 = response.context.get('page')[2].text
         self.assertEqual(

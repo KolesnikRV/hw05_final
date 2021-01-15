@@ -37,8 +37,11 @@ class PostsURLTests(TestCase):
             reverse('posts:profile', kwargs={'username': username}),
             reverse('posts:post', kwargs={'username': username,
                                           'post_id': post_id}),
+            reverse('posts:follow_index'),
+            reverse('posts:add_comment', kwargs={'username': username,
+                                                 'post_id': post_id}),
             reverse('posts:post_edit',
-                    kwargs={'username': username, 'post_id': post_id})
+                    kwargs={'username': username, 'post_id': post_id}),
         ]
         for url in urls_list_authorized:
             with self.subTest(url=url):
@@ -76,6 +79,12 @@ class PostsURLTests(TestCase):
             reverse('posts:new_post'),
             reverse('posts:post_edit',
                     kwargs={'username': username, 'post_id': post_id}),
+            reverse('posts:follow_index'),
+            reverse('posts:profile_follow', kwargs={'username': username}),
+            reverse('posts:profile_unfollow', kwargs={'username': username}),
+            reverse('posts:add_comment',
+                    kwargs={'username': username, 'post_id': post_id}),
+
         ]
         for url in url_list:
             with self.subTest():
@@ -104,6 +113,7 @@ class PostsURLTests(TestCase):
                 'posts:post',
                 kwargs={'username': username, 'post_id': post_id}
             ),
+            'follow.html': reverse('posts:follow_index'),
         }
         for template, reverse_name in templates_pages_names.items():
             with self.subTest():

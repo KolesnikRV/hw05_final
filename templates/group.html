@@ -9,8 +9,10 @@
           {% for post in page %}
               {% include "includes/post_item.html" with post=post %}
           {% endfor %}
+
+          {% include "includes/paginator.html" with items=page paginator=paginator%}
+
         </div>
 
-  {% include "includes/paginator.html" with items=page paginator=paginator%}
 
   {% endblock %}
