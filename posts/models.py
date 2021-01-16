@@ -39,7 +39,7 @@ class Post(models.Model):
         blank=True, null=True,
         verbose_name='Изображение',
         help_text='Добавьте своё изображение'
-        )
+    )
 
     class Meta:
         ordering = ('-pub_date',)
@@ -63,3 +63,6 @@ class Follow(models.Model):
                              related_name='follower')
     author = models.ForeignKey(User, on_delete=models.CASCADE,
                                related_name='following')
+
+    class Meta:
+        unique_together = ('user', 'author')

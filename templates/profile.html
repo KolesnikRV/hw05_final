@@ -6,42 +6,22 @@
 <main role="main" class="container">
         <div class="row">
             <div class="col-md-3 mb-3 mt-1">
-                    <div class="card">
-                            <div class="card-body">
-                                <div class="h2">
-                                        {{ author.get_full_name }}
-                                </div>
-                                <div class="h3 text-muted">
-                                        @{{ author.username }}
-                                </div>
-                            </div> <!-- card body -->
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item">
-                                        <div class="h6 text-muted">
-                                                Подписчиков: {{ author.following.count }} <br />
-                                                Подписан: {{ author.follower.count }}
-                                        </div>
-                                </li>
-                                <li class="list-group-item">
-                                        <div class="h6 text-muted">
-                                                Всего постов: {{ post_count }}
-                                        </div>
-                                </li>
-                            </ul>
-                            <li class="list-group-item">
-                                {% if following %}
-                                <a class="btn btn-lg btn-light" 
-                                        href="{% url 'posts:profile_unfollow' author.username %}" role="button"> 
-                                        Отписаться 
-                                </a> 
-                                {% else %}
-                                <a class="btn btn-lg btn-primary" 
-                                        href="{% url 'posts:profile_follow' author.username %}" role="button">
-                                Подписаться 
-                                </a>
-                                {% endif %}
-                            </li>
-                    </div> <!-- card -->
+                <div class="card">
+                {% include 'includes/author_card.html'%}
+                <li class="list-group-item">
+                        {% if following %}
+                        <a class="btn btn-lg btn-light" 
+                                href="{% url 'posts:profile_unfollow' author.username %}" role="button"> 
+                                Отписаться 
+                        </a> 
+                        {% else %}
+                        <a class="btn btn-lg btn-primary" 
+                                href="{% url 'posts:profile_follow' author.username %}" role="button">
+                        Подписаться 
+                        </a>
+                        {% endif %}
+                    </li>
+                </div>
             </div> <!-- col -->
 
             <div class="col-md-9">
