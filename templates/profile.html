@@ -6,22 +6,7 @@
 <main role="main" class="container">
         <div class="row">
             <div class="col-md-3 mb-3 mt-1">
-                <div class="card">
-                {% include 'includes/author_card.html'%}
-                <li class="list-group-item">
-                        {% if following %}
-                        <a class="btn btn-lg btn-light" 
-                                href="{% url 'posts:profile_unfollow' author.username %}" role="button"> 
-                                Отписаться 
-                        </a> 
-                        {% else %}
-                        <a class="btn btn-lg btn-primary" 
-                                href="{% url 'posts:profile_follow' author.username %}" role="button">
-                        Подписаться 
-                        </a>
-                        {% endif %}
-                    </li>
-                </div>
+                {% include 'includes/author_card.html' with author=author %}
             </div> <!-- col -->
 
             <div class="col-md-9">

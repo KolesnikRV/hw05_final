@@ -1,21 +1,40 @@
-<div class="card-body">
-        <div class="h2">
-                {{ author.get_full_name }}
-        </div>
-        <div class="h3 text-muted">
-                @{{ author.username }}
-        </div>
-    </div> <!-- card body -->
-    <ul class="list-group list-group-flush">
-        <li class="list-group-item">
-                <div class="h6 text-muted">
-                        Подписчиков: {{ author.following.count }} <br />
-                        Подписан: {{ author.follower.count }}
+<div class="card">
+        <div class="card-body">
+                <div class="h2">
+                        {{ author.get_full_name }}
                 </div>
-        </li>
-        <li class="list-group-item">
-                <div class="h6 text-muted">
-                        Всего постов: {{ post_count }}
+                <div class="h3 text-muted">
+                        @{{ author.username }}
                 </div>
+        </div> <!-- card body -->
+        <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                        <div class="h6 text-muted">
+                                Подписчиков: {{ author.following.count }} <br />
+                                Подписан: {{ author.follower.count }}
+                        </div>
+                </li>
+                <li class="list-group-item">
+                        <div class="h6 text-muted">
+                                Всего постов: {{ post_count }}
+                        </div>
+                </li>
+        </ul>
+        
+        
+        {% if author != request.user %}                
+        <li class="list-group-item">
+                {% if following %}
+                <a class="btn btn-lg btn-light" 
+                        href="{% url 'posts:profile_unfollow' author.username %}" role="button"> 
+                        Отписаться 
+                </a> 
+                {% else %}
+                <a class="btn btn-lg btn-primary" 
+                        href="{% url 'posts:profile_follow' author.username %}" role="button">
+                Подписаться 
+                </a>
+                {% endif %}
         </li>
-    </ul>        
+        {% endif %}
+</div>

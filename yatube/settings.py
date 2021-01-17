@@ -14,12 +14,18 @@ SECRET_KEY = '#ej9=j%s4s2x=o3d+a!wy14r=^%p(xwusgyug9a)*-^8u)erzt'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "[::1]",
-    "testserver",
+    'localhost',
+    '127.0.0.1',
+    '[::1]',
+    'testserver',
 ]
 
+
+# Internal Ip's
+
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
 
 # Application definition
 
@@ -34,9 +40,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'sorl.thumbnail',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -136,15 +144,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Login
 
-LOGIN_URL = "/auth/login/"
+LOGIN_URL = '/auth/login/'
 
-LOGIN_REDIRECT_URL = "posts:index"
+LOGIN_REDIRECT_URL = 'posts:index'
 
 # LOGOUT_REDIRECT_URL = "index"
 
 
 # Email emulation
 
-EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
