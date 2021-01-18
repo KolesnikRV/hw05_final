@@ -1,13 +1,15 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 
 from .models import Follow, Group, Post, User
 from .forms import PostForm, CommentForm
 
 
 def index(request):
-    post_list = Post.objects.all()
+    post_list = Post.objects.annotate(comments_count=Count('comments'))\
+                            .order_by('-pub_date')
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -21,7 +23,8 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    post_list = group.posts.all()
+    post_list = group.posts.annotate(comments_count=Count('comments'))\
+                           .order_by('-pub_date')
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -50,7 +53,6 @@ def new_post(request):
 def profile(request, username):
     author = get_object_or_404(User, username=username)
     post_list = author.posts.all()
-    post_count = post_list.count()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -61,7 +63,7 @@ def profile(request, username):
         'page': page,
         'paginator': paginator,
         'author': author,
-        'post_count': post_count,
+        'post_count': paginator.count,
         'following': following,
     }
 
@@ -71,9 +73,9 @@ def profile(request, username):
 def post_view(request, username, post_id):
     author = get_object_or_404(User, username=username)
     post = get_object_or_404(Post, pk=post_id, author=author)
-    post_count = author.posts.all().count()
+    post_count = author.posts.count()
     form = CommentForm()
-    comments = post.comments.select_related()
+    comments = post.comments.select_related('author')
     context = {
         'author': author,
         'post': post,
@@ -133,7 +135,9 @@ def add_comment(request, username, post_id):
 
 @login_required
 def follow_index(request):
-    post_list = Post.objects.filter(author__following__user=request.user)
+    post_list = Post.objects.filter(author__following__user=request.user)\
+                            .annotate(comments_count=Count('comments'))\
+                            .order_by('-pub_date')
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
