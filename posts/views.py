@@ -1,7 +1,9 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
+from django.urls.base import reverse
 
 from .models import Follow, Group, Post, User
 from .forms import PostForm, CommentForm
@@ -45,7 +47,7 @@ def new_post(request):
         post.author = request.user
         post.save()
 
-        return redirect('posts:index')
+        return HttpResponseRedirect(reverse('posts:index'))
 
     return render(request, 'posts/post_new.html', {'form': form})
 
@@ -101,10 +103,9 @@ def post_edit(request, username, post_id):
         post = form.save(commit=False)
         post.save()
 
-        return redirect(
-            'posts:post',
-            username=username,
-            post_id=post_id,
+        return HttpResponseRedirect(
+            reverse('posts:post',
+                    kwargs={'username': username, 'post_id': post_id}),
         )
 
     return render(
@@ -124,10 +125,9 @@ def add_comment(request, username, post_id):
         comment.author = request.user
         comment.save()
 
-        return redirect(
-            'posts:post',
-            username=username,
-            post_id=post_id,
+        return HttpResponseRedirect(
+            reverse('posts:post',
+                    kwargs={'username': username, 'post_id': post_id}),
         )
 
     return render(request, 'posts/post_new.html', {'form': form})
