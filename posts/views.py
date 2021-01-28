@@ -73,13 +73,12 @@ def profile(request, username):
 
 
 def post_view(request, username, post_id):
-    author = get_object_or_404(User, username=username)
-    post = get_object_or_404(Post, pk=post_id, author=author)
-    post_count = author.posts.count()
+    post = get_object_or_404(Post, pk=post_id, author__username=username)
+    post_count = post.author.posts.count()
     form = CommentForm()
     comments = post.comments.select_related('author')
     context = {
-        'author': author,
+        'author': post.author,
         'post': post,
         'post_count': post_count,
         'form': form,
@@ -91,11 +90,10 @@ def post_view(request, username, post_id):
 
 @login_required
 def post_edit(request, username, post_id):
-    author = get_object_or_404(User, username=username)
-    if request.user != author:
+    if request.user.username != username:
         return redirect('posts:post', username=username, post_id=post_id)
 
-    post = get_object_or_404(Post, pk=post_id, author=author)
+    post = get_object_or_404(Post, pk=post_id, author__username=username)
     form = PostForm(request.POST or None,
                     files=request.FILES or None,
                     instance=post)
