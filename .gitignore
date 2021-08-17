@@ -18,8 +18,8 @@ __pycache__/
 *.sublime-workspace
 
 sent_emails/
-static/
-posts/static/
+# static/
+# posts/static/
 media/
 
 db.sqlite3
@@ -28,4 +28,4 @@ htmlcov/
 .coverage
 .coverage.*
 coverage.xml
-*.cover 
+*.cover
