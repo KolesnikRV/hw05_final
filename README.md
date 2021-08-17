@@ -35,7 +35,7 @@
 - $: python manage.py createsuperuser
 
 ## Запускаем проект:
-- $: python manage.py runserver (переходим по адресу)(http://127.0.0.1:8000)
+- $: python manage.py runserver (и переходим по адресу - http://127.0.0.1:8000)
 
 # Автор
 ## Студент яндекс практикум 12 когорта Роман Колесник
